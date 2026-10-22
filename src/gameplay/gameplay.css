@@ -1,0 +1,90 @@
+/* ---- map markers ---- */
+.sz-marker { background: none; border: none; }
+.sz-marker-inner {
+  width: 56px; height: 56px; position: relative;
+  filter: drop-shadow(0 0 6px var(--glow)) drop-shadow(0 0 2px #000);
+  animation: sz-bob 2.4s ease-in-out infinite;
+  opacity: 0.85;
+}
+.sz-marker-inner img, .sz-marker-fallback { width: 100%; height: 100%; object-fit: contain; display: block; }
+.sz-marker-fallback {
+  background: #000;
+  clip-path: path('M28 3 C38 3 40 13 39 20 C48 24 50 39 51 56 L5 56 C6 39 8 24 17 20 C16 13 18 3 28 3 Z');
+}
+.sz-near .sz-marker-inner { opacity: 1; animation-duration: 1.2s; }
+.sz-near .sz-marker-inner::after {
+  content: ''; position: absolute; left: 50%; bottom: -4px; width: 40px; height: 12px;
+  transform: translateX(-50%); border-radius: 50%;
+  border: 2px solid var(--glow); animation: sz-pulse 1.2s ease-out infinite;
+}
+.sz-rarity-legendary .sz-marker-inner { filter: drop-shadow(0 0 12px var(--glow)) drop-shadow(0 0 4px var(--glow)); }
+@keyframes sz-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes sz-pulse { from { opacity: 1; transform: translateX(-50%) scale(0.6); } to { opacity: 0; transform: translateX(-50%) scale(1.4); } }
+
+.sz-map-toast, .sz-enc-toast {
+  position: fixed; left: 50%; transform: translate(-50%, 10px);
+  background: rgba(10, 8, 20, 0.9); color: #fff; padding: 10px 16px; border-radius: 999px;
+  font: 600 14px/1.2 system-ui, sans-serif; pointer-events: none; opacity: 0;
+  transition: opacity 0.2s, transform 0.2s; max-width: calc(100vw - 32px); text-align: center;
+}
+.sz-map-toast { bottom: calc(80px + env(safe-area-inset-bottom)); z-index: 1500; }
+.sz-show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---- encounter ---- */
+.sz-encounter {
+  position: fixed; inset: 0; z-index: 2000; background: #05040a; color: #fff;
+  touch-action: none; user-select: none; -webkit-user-select: none;
+  font-family: system-ui, sans-serif;
+}
+.sz-encounter canvas { display: block; touch-action: none; }
+.sz-enc-hud {
+  position: absolute; top: 0; left: 0; right: 0;
+  padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
+  display: flex; align-items: flex-start; gap: 12px; pointer-events: none;
+}
+.sz-enc-hud > * { pointer-events: auto; }
+.sz-enc-run {
+  background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 999px; padding: 8px 14px; font: 600 14px system-ui, sans-serif;
+}
+.sz-enc-title { flex: 1; text-align: center; }
+.sz-enc-name { font-size: 20px; font-weight: 700; text-shadow: 0 0 10px var(--glow); }
+.sz-enc-sub { font-size: 12px; opacity: 0.75; margin-top: 2px; }
+.sz-enc-throws { font-size: 12px; opacity: 0.75; padding-top: 8px; }
+.sz-enc-toast { top: 40%; z-index: 1; font-size: 20px; }
+
+.sz-enc-result {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 24px; text-align: center; background: rgba(5, 4, 10, 0.85);
+  animation: sz-fade 0.3s ease-out;
+}
+.sz-enc-result img { width: min(50vw, 220px); height: auto; filter: drop-shadow(0 0 16px var(--glow)); }
+.sz-enc-result h2 { margin: 0; font-size: 26px; text-shadow: 0 0 12px var(--glow); }
+.sz-enc-result p { margin: 0; max-width: 340px; opacity: 0.8; line-height: 1.4; }
+.sz-btn {
+  margin-top: 8px; background: var(--glow); color: #000; border: none; border-radius: 999px;
+  padding: 12px 28px; font: 700 16px system-ui, sans-serif;
+}
+@keyframes sz-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---- collection ---- */
+.sz-collection { padding: 16px; color: inherit; }
+.sz-collection-header { font-weight: 700; margin-bottom: 12px; opacity: 0.85; }
+.sz-collection-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+.sz-card {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px;
+  padding: 10px; display: flex; flex-direction: column; gap: 4px; min-width: 0;
+}
+.sz-card.sz-caught { box-shadow: inset 0 0 0 1px var(--glow), 0 0 14px -6px var(--glow); }
+.sz-card img { width: 100%; aspect-ratio: 1; object-fit: contain; filter: drop-shadow(0 0 8px var(--glow)); }
+.sz-card-silhouette { width: 100%; aspect-ratio: 1; background: rgba(255,255,255,0.06); border-radius: 10px;
+  clip-path: path('M70 8 C95 8 100 32 98 50 C120 60 125 98 128 140 L12 140 C15 98 20 60 42 50 C40 32 45 8 70 8 Z'); }
+.sz-card-name { font-weight: 700; font-size: 14px; overflow-wrap: anywhere; }
+.sz-card-meta { font-size: 12px; opacity: 0.7; text-transform: capitalize; }
+.sz-card-lore { font-size: 12px; opacity: 0.65; line-height: 1.35; }
+.sz-unknown .sz-card-name { opacity: 0.5; }
+.sz-rarity-uncommon { color: #36e0c8; }
+.sz-rarity-rare { color: #5cb8ff; }
+.sz-rarity-epic { color: #c27cff; }
+.sz-rarity-legendary { color: #ffd23b; }
+.sz-card.sz-rarity-uncommon, .sz-card.sz-rarity-rare, .sz-card.sz-rarity-epic, .sz-card.sz-rarity-legendary { color: inherit; }
