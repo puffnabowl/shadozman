@@ -1,0 +1,90 @@
+/* Shadozman visual style. Loaded after src/style.css, so these values win. */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@400;600&display=swap');
+
+:root {
+  color-scheme: dark;
+
+  --sz-bg: #07060c;
+  --sz-bg-2: #120d22;
+  --sz-surface: #16131f;
+  --sz-surface-2: #1f1b2c;
+  --sz-border: #2c2838;
+  --sz-fg: #e9e4f5;
+  --sz-muted: #8f8aa3;
+  --sz-accent: #a77bff;
+  --sz-accent-2: #6fe0ff;
+  --sz-danger: #ff5d73;
+
+  --sz-rarity-common: #8f8aa3;
+  --sz-rarity-uncommon: #5fd3a6;
+  --sz-rarity-rare: #5aa8ff;
+  --sz-rarity-epic: #c27bff;
+  --sz-rarity-legendary: #ffb547;
+
+  --sz-font-display: 'Cinzel', Georgia, serif;
+  --sz-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --sz-radius: 14px;
+  --sz-glow: 0 0 18px rgb(167 123 255 / 0.45);
+
+  /* Map overlay: dims daytime OSM tiles toward night. */
+  --sz-map-filter: invert(1) hue-rotate(200deg) brightness(0.7) contrast(1.1) saturate(0.5);
+}
+
+html,
+body {
+  background: radial-gradient(120% 80% at 50% 0%, var(--sz-bg-2), var(--sz-bg) 70%) fixed;
+  color: var(--sz-fg);
+  font-family: var(--sz-font-body);
+}
+
+h1,
+h2,
+h3,
+.sz-display {
+  font-family: var(--sz-font-display);
+  letter-spacing: 0.04em;
+}
+
+/* Rarity helpers: <span class="sz-rarity" data-rarity="epic">Epic</span> */
+.sz-rarity {
+  --c: var(--sz-rarity-common);
+  color: var(--c);
+  border: 1px solid color-mix(in srgb, var(--c) 50%, transparent);
+  background: color-mix(in srgb, var(--c) 12%, transparent);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+[data-rarity='uncommon'] { --c: var(--sz-rarity-uncommon); }
+[data-rarity='rare'] { --c: var(--sz-rarity-rare); }
+[data-rarity='epic'] { --c: var(--sz-rarity-epic); }
+[data-rarity='legendary'] { --c: var(--sz-rarity-legendary); }
+
+/* Portrait card: set style="--glow: <shadow.glow>" from data. */
+.sz-portrait {
+  --glow: var(--sz-accent);
+  background: radial-gradient(circle at 50% 55%, color-mix(in srgb, var(--glow) 18%, transparent), transparent 65%),
+    var(--sz-surface);
+  border: 1px solid var(--sz-border);
+  border-radius: var(--sz-radius);
+}
+.sz-portrait img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+/* Gentle idle drift for a shadow on the encounter screen. */
+@keyframes sz-drift {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 1; }
+  50% { transform: translateY(-6px) scale(1.01); opacity: 0.88; }
+}
+.sz-drift {
+  animation: sz-drift 4.5s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sz-drift { animation: none; }
+}
