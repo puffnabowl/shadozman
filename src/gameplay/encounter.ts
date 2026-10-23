@@ -22,7 +22,7 @@ type Phase = 'idle' | 'aiming' | 'flying' | 'capturing' | 'broke' | 'done';
 interface Orb { x: number; y: number; vx: number; vy: number; r: number; spin: number }
 
 const GRAVITY = 2600; // px/s^2, scaled by screen height
-const MIN_THROW_SPEED = 600;
+const MIN_THROW_SPEED = 350;
 
 class Encounter {
   private root = document.createElement('div');
@@ -145,8 +145,8 @@ class Encounter {
     if (this.phase !== 'aiming') return;
     const now = performance.now();
     this.trail.push({ x: e.clientX, y: e.clientY, t: now });
-    // Velocity from the last ~90ms of the swipe.
-    const recent = this.trail.filter((p) => now - p.t < 90);
+    // Velocity from the last ~120ms of the swipe.
+    const recent = this.trail.filter((p) => now - p.t < 120);
     const a = recent[0] ?? this.trail[0];
     const b = this.trail[this.trail.length - 1];
     const dt = Math.max(0.016, (b.t - a.t) / 1000);
@@ -160,9 +160,13 @@ class Encounter {
     }
     // Curve = how much the swipe path bowed sideways relative to its chord.
     this.curve = Math.min(1, Math.abs(pathBow(this.trail)) / 60);
-    const scale = this.h / 800;
-    this.orb.vx = vx * 0.9;
-    this.orb.vy = Math.max(vy, -2600 * scale) * 1.0;
+    // Normalize power so a normal swipe (~1000px/s) peaks right at the shadow;
+    // faster swipes overshoot through it, slow ones fall short. Direction is kept.
+    const g = GRAVITY * (this.h / 800);
+    const reach = Math.sqrt(2 * g * Math.max(50, this.orbHome.y - this.shadowPos().y));
+    const power = Math.min(1.35, Math.max(0.55, -vy / 1000));
+    this.orb.vy = -reach * power;
+    this.orb.vx = (vx / -vy) * reach * power;
     this.orb.spin = this.curve > 0.3 ? Math.sign(pathBow(this.trail)) * 8 : 2;
     this.lockedRing = this.ringScale();
     this.throws++;
@@ -338,10 +342,12 @@ class Encounter {
       const flicker = this.phase === 'broke' ? 0.5 + 0.5 * Math.sin(this.t * 60) : 1;
       ctx.save();
       ctx.globalAlpha = flicker;
-      ctx.shadowColor = this.shadow.glow;
-      ctx.shadowBlur = 30;
       if (this.imgOk) ctx.drawImage(this.img, sp.x - size / 2, sp.y - size / 2, size, size);
-      else drawSilhouette(ctx, sp.x, sp.y, size, this.shadow.glow, this.t);
+      else {
+        ctx.shadowColor = this.shadow.glow;
+        ctx.shadowBlur = 30;
+        drawSilhouette(ctx, sp.x, sp.y, size, this.shadow.glow, this.t);
+      }
       ctx.restore();
 
       // Target rings.

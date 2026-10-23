@@ -1,4 +1,4 @@
-import { SHADOWS, timeOfDay } from '../content/shadows';
+import { canSpawnAt, SHADOWS, timeOfDay } from '../content/shadows';
 import type { ShadowType } from '../content/types';
 import { hashString, mulberry32, pickWeighted } from './rng';
 
@@ -38,7 +38,7 @@ export function distanceMeters(lat1: number, lng1: number, lat2: number, lng2: n
 /** Shadows that may appear at this moment, based on their spawn.times. */
 export function eligibleShadows(now: Date): ShadowType[] {
   const tod = timeOfDay(now);
-  return SHADOWS.filter((s) => s.spawn.times.includes(tod));
+  return SHADOWS.filter((s) => canSpawnAt(s, tod));
 }
 
 /** Deterministic spawns for one grid cell in one time window. */
