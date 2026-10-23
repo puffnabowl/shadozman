@@ -12,6 +12,9 @@ export type Habitat =
   | 'cemetery'
   | 'any';
 
+/** The feature you spot first, before the whole shadow reveals itself. */
+export type Tell = 'eyes' | 'hands' | 'smile';
+
 export interface ShadowStats {
   /** How frightening it is; drives encounter music and shake. 1–100 */
   menace: number;
@@ -44,8 +47,12 @@ export interface ShadowType {
   /** Chance it vanishes after a failed throw, 0–1. */
   fleeRate: number;
   spawn: ShadowSpawn;
+  /** What you spot first on the map and in the dark spot during a hunt. */
+  tell: Tell;
   /** Public URL of the transparent, square SVG portrait. */
   art: string;
+  /** Public URL of the square SVG showing only the tell, glow-coloured on a soft dark vignette. */
+  tellArt: string;
   /** Accent color for eyes, glow and UI highlights. */
   glow: string;
 }
