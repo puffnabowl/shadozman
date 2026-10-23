@@ -1,6 +1,7 @@
 import L from 'leaflet';
 import { isSpawnResolved } from './collection';
 import { huntSpawn } from './search';
+import { tellFor, tellHtml } from './tells';
 import { distanceMeters, INTERACT_RADIUS_M, spawnsNear, type Spawn } from './spawning';
 
 export interface GameplayHandle {
@@ -9,6 +10,9 @@ export interface GameplayHandle {
 
 /** Re-scan for spawns at least this often even if the player stands still. */
 const RESCAN_MS = 15_000;
+
+const TELL_LABEL = { eyes: 'Eyes watching', hands: 'Hands reaching out', smile: 'A smile grinning' } as const;
+const tellLabel = (s: Spawn) => TELL_LABEL[tellFor(s.shadow)];
 
 export function initGameplay(map: L.Map): GameplayHandle {
   const layer = L.layerGroup().addTo(map);
@@ -27,12 +31,12 @@ export function initGameplay(map: L.Map): GameplayHandle {
     toastTimer = window.setTimeout(() => toast.classList.remove('sz-show'), 1800);
   };
 
-  // The map only shows that *something* is lurking; which shadow it is stays
-  // hidden until the player finds it with the camera.
-  const iconFor = (near: boolean): L.DivIcon =>
+  // The map only shows a tell (eyes, hands or a smile) in the dark; which
+  // shadow it is stays hidden until the player finds it with the camera.
+  const iconFor = (spawn: Spawn, near: boolean): L.DivIcon =>
     L.divIcon({
-      className: `sz-marker${near ? ' sz-near' : ''}`,
-      html: `<div class="sz-marker-inner sz-lurk"><div class="sz-marker-fallback"></div></div>`,
+      className: `sz-marker sz-tell-marker${near ? ' sz-near' : ''}`,
+      html: `<div class="sz-marker-inner sz-lurk" style="--glow:${spawn.shadow.glow}">${tellHtml(spawn.shadow)}</div>`,
       iconSize: [56, 56],
       iconAnchor: [28, 50],
     });
@@ -46,7 +50,7 @@ export function initGameplay(map: L.Map): GameplayHandle {
     }
     const d = distanceMeters(player.lat, player.lng, spawn.lat, spawn.lng);
     if (d > INTERACT_RADIUS_M) {
-      showToast(`Something is hiding ${spawn.hidingSpot.where}, ${Math.round(d)} m away. Get within ${INTERACT_RADIUS_M} m.`);
+      showToast(`${tellLabel(spawn)} ${spawn.hidingSpot.where}, ${Math.round(d)} m away. Get within ${INTERACT_RADIUS_M} m.`);
       return;
     }
     inEncounter = true;
@@ -75,13 +79,13 @@ export function initGameplay(map: L.Map): GameplayHandle {
       const near = distanceMeters(player.lat, player.lng, s.lat, s.lng) <= INTERACT_RADIUS_M;
       let m = markers.get(s.id);
       if (!m) {
-        m = L.marker([s.lat, s.lng], { icon: iconFor(near), title: `Something hiding ${s.hidingSpot.where}`, riseOnHover: true });
+        m = L.marker([s.lat, s.lng], { icon: iconFor(s, near), title: `${tellLabel(s)} ${s.hidingSpot.where}`, riseOnHover: true });
         (m as L.Marker & { _near?: boolean })._near = near;
         m.on('click', () => onTap(s));
         layer.addLayer(m);
         markers.set(s.id, m);
       } else if ((m as L.Marker & { _near?: boolean })._near !== near) {
-        m.setIcon(iconFor(near));
+        m.setIcon(iconFor(s, near));
         (m as L.Marker & { _near?: boolean })._near = near;
       }
     }

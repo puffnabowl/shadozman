@@ -1,6 +1,7 @@
 import { readDarkness, SAMPLE_H, SAMPLE_W, type DarkReading } from './darkness';
 import { openEncounter, type EncounterResult } from './encounter';
 import type { Spawn } from './spawning';
+import { tellHtml } from './tells';
 
 // Camera access is owned by core (src/core/camera.ts). Loaded optionally so
 // gameplay still builds and falls back to the dark scene without it.
@@ -68,7 +69,7 @@ function searchWithCamera(spawn: Spawn, video: HTMLVideoElement): Promise<boolea
           <div class="sz-search-tip">${escapeHtml(spawn.hidingSpot.tip)}</div>
         </div>
       </div>
-      <div class="sz-reticle"><div class="sz-reticle-eyes"><i></i><i></i></div></div>
+      <div class="sz-reticle"><div class="sz-reticle-tell">${tellHtml(spawn.shadow)}</div></div>
       <div class="sz-search-bottom">
         <div class="sz-search-status">Point your camera into dark spots</div>
         <div class="sz-meter"><div class="sz-meter-fill"></div></div>
