@@ -25,3 +25,8 @@ export interface ContentModule {
   SHADOWS: Array<{ id: string; name: string; dexNumber: number; rarity: string; art: string }>;
   getShadow(id: string): unknown;
 }
+
+// Camera: gameplay may load src/core/camera.ts and call
+//   startCamera(): Promise<CameraHandle | null>
+// null means no camera (denied, insecure, missing); core has already told the player.
+export type { CameraHandle } from './camera';

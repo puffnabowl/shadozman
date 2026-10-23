@@ -86,3 +86,13 @@ body {
 .leaflet-container { font-family: inherit; }
 .leaflet-control-attribution { background: rgba(11, 11, 18, 0.7) !important; color: var(--sz-muted) !important; font-size: 10px; }
 .leaflet-control-attribution a { color: var(--sz-muted) !important; }
+
+/* Camera permission / availability notice (above the gameplay overlays) */
+#camera-notice {
+  position: fixed; left: 16px; right: 16px; top: calc(16px + env(safe-area-inset-top));
+  z-index: 3000; padding: 12px 14px; border-radius: 12px;
+  background: rgba(22, 21, 31, 0.95); border: 1px solid #3a3550; color: var(--sz-fg);
+  font-size: 14px; line-height: 1.4; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  opacity: 0; transform: translateY(-8px); pointer-events: none; transition: opacity 0.25s, transform 0.25s;
+}
+#camera-notice.show { opacity: 1; transform: none; pointer-events: auto; }
