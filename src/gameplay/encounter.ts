@@ -10,9 +10,16 @@ export type EncounterResult = 'caught' | 'fled' | 'ran';
  * Throwing while the shrinking ring is small gives a bonus; a curved
  * (sideways) swipe that still lands gives a small extra bonus.
  */
-export function openEncounter(spawn: Spawn): Promise<EncounterResult> {
+export interface EncounterOptions {
+  /** Live camera feed to show behind the shadow (AR mode). */
+  video?: HTMLVideoElement;
+  /** Screen point the shadow emerged from, in CSS px. */
+  anchor?: { x: number; y: number };
+}
+
+export function openEncounter(spawn: Spawn, opts: EncounterOptions = {}): Promise<EncounterResult> {
   return new Promise((resolve) => {
-    const enc = new Encounter(spawn, (r) => resolve(r));
+    const enc = new Encounter(spawn, (r) => resolve(r), opts);
     enc.start();
   });
 }
@@ -51,7 +58,7 @@ class Encounter {
   private brokeT = 0;
   private shadow: ShadowType;
 
-  constructor(private spawn: Spawn, private onDone: (r: EncounterResult) => void) {
+  constructor(private spawn: Spawn, private onDone: (r: EncounterResult) => void, private opts: EncounterOptions) {
     this.shadow = spawn.shadow;
   }
 
@@ -67,6 +74,11 @@ class Encounter {
       </div>
       <div class="sz-enc-throws">Orbs thrown: <b>0</b></div>`;
     this.toast.className = 'sz-enc-toast';
+    if (this.opts.video) {
+      this.root.classList.add('sz-enc-ar');
+      this.opts.video.classList.add('sz-camera-video');
+      this.root.appendChild(this.opts.video);
+    }
     this.root.append(this.canvas, this.hud, this.toast);
     document.body.appendChild(this.root);
 
@@ -106,9 +118,13 @@ class Encounter {
   private shadowPos(): { x: number; y: number } {
     const speed = 0.4 + (this.shadow.stats.speed / 100) * 1.4;
     const amp = this.w * 0.18 * (0.4 + this.shadow.stats.stealth / 160);
+    // In AR mode it lurks around the dark spot it came out of, drifting less.
+    const a = this.opts.anchor;
+    const cx = a ? Math.min(this.w * 0.75, Math.max(this.w * 0.25, a.x)) : this.w / 2;
+    const cy = a ? Math.min(this.h * 0.45, Math.max(this.h * 0.25, a.y)) : this.h * 0.36;
     return {
-      x: this.w / 2 + Math.sin(this.t * speed) * amp,
-      y: this.h * 0.36 + Math.sin(this.t * speed * 1.7) * 10,
+      x: cx + Math.sin(this.t * speed) * amp * (a ? 0.5 : 1),
+      y: cy + Math.sin(this.t * speed * 1.7) * 10,
     };
   }
 
@@ -312,28 +328,35 @@ class Encounter {
 
   private draw(): void {
     const { ctx, w, h } = this;
-    const bg = ctx.createRadialGradient(w / 2, h * 0.4, 20, w / 2, h * 0.5, Math.max(w, h));
-    bg.addColorStop(0, '#1b1530');
-    bg.addColorStop(1, '#05040a');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, w, h);
+    if (this.opts.video) {
+      // Camera feed shows through; darken it so the shadow and rings read.
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = 'rgba(5,4,10,0.35)';
+      ctx.fillRect(0, 0, w, h);
+    } else {
+      const bg = ctx.createRadialGradient(w / 2, h * 0.4, 20, w / 2, h * 0.5, Math.max(w, h));
+      bg.addColorStop(0, '#1b1530');
+      bg.addColorStop(1, '#05040a');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
 
-    // Drifting fog.
-    for (let i = 0; i < 5; i++) {
-      const fx = ((this.t * (10 + i * 6) + i * 200) % (w + 400)) - 200;
-      const fy = h * (0.25 + i * 0.12);
-      const fog = ctx.createRadialGradient(fx, fy, 0, fx, fy, 220);
-      fog.addColorStop(0, 'rgba(120,110,160,0.07)');
-      fog.addColorStop(1, 'rgba(120,110,160,0)');
-      ctx.fillStyle = fog;
-      ctx.fillRect(fx - 220, fy - 220, 440, 440);
+      // Drifting fog.
+      for (let i = 0; i < 5; i++) {
+        const fx = ((this.t * (10 + i * 6) + i * 200) % (w + 400)) - 200;
+        const fy = h * (0.25 + i * 0.12);
+        const fog = ctx.createRadialGradient(fx, fy, 0, fx, fy, 220);
+        fog.addColorStop(0, 'rgba(120,110,160,0.07)');
+        fog.addColorStop(1, 'rgba(120,110,160,0)');
+        ctx.fillStyle = fog;
+        ctx.fillRect(fx - 220, fy - 220, 440, 440);
+      }
+
+      // Ground.
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.beginPath();
+      ctx.ellipse(w / 2, h * 0.36 + this.shadowSize * 0.5, w * 0.45, 30, 0, 0, Math.PI * 2);
+      ctx.fill();
     }
-
-    // Ground.
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.beginPath();
-    ctx.ellipse(w / 2, h * 0.36 + this.shadowSize * 0.5, w * 0.45, 30, 0, 0, Math.PI * 2);
-    ctx.fill();
 
     const sp = this.shadowPos();
     const size = this.shadowSize;

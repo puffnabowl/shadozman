@@ -88,3 +88,42 @@
 .sz-rarity-epic { color: #c27cff; }
 .sz-rarity-legendary { color: #ffd23b; }
 .sz-card.sz-rarity-uncommon, .sz-card.sz-rarity-rare, .sz-card.sz-rarity-epic, .sz-card.sz-rarity-legendary { color: inherit; }
+
+/* ---- lurking marker (species hidden until found) ---- */
+.sz-lurk { --glow: #8a6cff; }
+.sz-lurk .sz-marker-fallback { opacity: 0.8; animation: sz-flicker 3.2s steps(1) infinite; }
+@keyframes sz-flicker { 0%, 100% { opacity: 0.8; } 47% { opacity: 0.25; } 49% { opacity: 0.8; } 83% { opacity: 0.4; } 84% { opacity: 0.8; } }
+
+/* ---- camera search ---- */
+.sz-search, .sz-enc-ar { background: #000; }
+.sz-search {
+  position: fixed; inset: 0; z-index: 2000; color: #fff; font-family: system-ui, sans-serif;
+  touch-action: none; user-select: none; -webkit-user-select: none; overflow: hidden;
+}
+.sz-camera-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.sz-enc-ar canvas { position: relative; }
+.sz-search-top {
+  position: absolute; top: 0; left: 0; right: 0; display: flex; gap: 12px; align-items: flex-start;
+  padding: calc(12px + env(safe-area-inset-top)) 16px 16px;
+  background: linear-gradient(rgba(0,0,0,0.7), transparent);
+}
+.sz-search-hint { flex: 1; min-width: 0; }
+.sz-search-where { font-weight: 700; font-size: 17px; text-shadow: 0 0 10px var(--glow); }
+.sz-search-tip { font-size: 13px; opacity: 0.8; margin-top: 2px; line-height: 1.35; }
+.sz-reticle {
+  --p: 0; position: absolute; left: 50%; top: 50%; width: 30vmin; height: 30vmin;
+  transform: translate(-50%, -50%); border-radius: 50%;
+  border: 2px dashed rgba(255,255,255,0.5); transition: border-color 0.2s, box-shadow 0.2s;
+}
+.sz-reticle.sz-locked { border-style: solid; border-color: var(--glow); box-shadow: 0 0 calc(var(--p) * 40px) var(--glow), inset 0 0 calc(var(--p) * 40px) var(--glow); }
+.sz-reticle-eyes { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; gap: 14%; opacity: calc((var(--p) - 0.45) * 2); }
+.sz-reticle-eyes i { width: 9%; height: 4%; border-radius: 50%; background: var(--glow); box-shadow: 0 0 10px var(--glow); animation: sz-blink 2.6s infinite; }
+@keyframes sz-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+.sz-search-bottom {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
+  background: linear-gradient(transparent, rgba(0,0,0,0.75)); text-align: center;
+}
+.sz-search-status { font-weight: 600; font-size: 15px; margin-bottom: 10px; }
+.sz-meter { height: 8px; border-radius: 999px; background: rgba(255,255,255,0.15); overflow: hidden; max-width: 320px; margin: 0 auto; }
+.sz-meter-fill { height: 100%; width: 0; background: var(--glow); box-shadow: 0 0 10px var(--glow); transition: width 0.1s linear; }
+.sz-emerge::after { content: ''; position: absolute; inset: 0; background: #000; animation: sz-fade 0.6s ease-in forwards; }

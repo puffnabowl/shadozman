@@ -1,5 +1,6 @@
 import { canSpawnAt, SHADOWS, timeOfDay } from '../content/shadows';
 import type { ShadowType } from '../content/types';
+import { hidingSpotFor, type HidingSpot } from './hiding';
 import { hashString, mulberry32, pickWeighted } from './rng';
 
 /** Size of one spawn cell in degrees (~150 m of latitude). */
@@ -20,6 +21,8 @@ export interface Spawn {
   shadow: ShadowType;
   lat: number;
   lng: number;
+  /** Where it's hiding; the player finds it with the camera. */
+  hidingSpot: HidingSpot;
   /** Epoch ms when this spawn despawns. */
   expiresAt: number;
 }
@@ -53,11 +56,13 @@ export function spawnsForCell(cx: number, cy: number, window: number, now: Date)
   for (let i = 0; i < count; i++) {
     const shadow = pickWeighted(pool, (s) => s.spawn.weight, rand);
     if (!shadow) continue;
+    const id = `${cx}:${cy}:${window}:${i}`;
     spawns.push({
-      id: `${cx}:${cy}:${window}:${i}`,
+      id,
       shadow,
       lat: (cy + rand()) * CELL_DEG,
       lng: (cx + rand()) * CELL_DEG,
+      hidingSpot: hidingSpotFor(id, shadow.spawn.habitats),
       expiresAt: (window + 1) * WINDOW_MS,
     });
   }
