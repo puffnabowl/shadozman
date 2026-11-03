@@ -31,12 +31,12 @@ export function initGameplay(map: L.Map): GameplayHandle {
     toastTimer = window.setTimeout(() => toast.classList.remove('sz-show'), 1800);
   };
 
-  // The map only shows a tell (eyes, hands or a smile) in the dark; which
-  // shadow it is stays hidden until the player finds it with the camera.
+  // The map shows a tell (eyes, hands or a smile) in the dark, labelled with
+  // the shadow's name; the full shadow appears once found with the camera.
   const iconFor = (spawn: Spawn, near: boolean): L.DivIcon =>
     L.divIcon({
       className: `sz-marker sz-tell-marker${near ? ' sz-near' : ''}`,
-      html: `<div class="sz-marker-inner sz-lurk" style="--glow:${spawn.shadow.glow}">${tellHtml(spawn.shadow)}</div>`,
+      html: `<div class="sz-marker-inner sz-lurk" style="--glow:${spawn.shadow.glow}">${tellHtml(spawn.shadow)}</div><div class="sz-marker-name" style="--glow:${spawn.shadow.glow}">${escapeHtml(spawn.shadow.name)}</div>`,
       iconSize: [56, 56],
       iconAnchor: [28, 50],
     });
@@ -50,7 +50,7 @@ export function initGameplay(map: L.Map): GameplayHandle {
     }
     const d = distanceMeters(player.lat, player.lng, spawn.lat, spawn.lng);
     if (d > INTERACT_RADIUS_M) {
-      showToast(`${tellLabel(spawn)} ${spawn.hidingSpot.where}, ${Math.round(d)} m away. Get within ${INTERACT_RADIUS_M} m.`);
+      showToast(`${spawn.shadow.name}: ${tellLabel(spawn).toLowerCase()} ${spawn.hidingSpot.where}, ${Math.round(d)} m away. Get within ${INTERACT_RADIUS_M} m.`);
       return;
     }
     inEncounter = true;
@@ -79,7 +79,7 @@ export function initGameplay(map: L.Map): GameplayHandle {
       const near = distanceMeters(player.lat, player.lng, s.lat, s.lng) <= INTERACT_RADIUS_M;
       let m = markers.get(s.id);
       if (!m) {
-        m = L.marker([s.lat, s.lng], { icon: iconFor(s, near), title: `${tellLabel(s)} ${s.hidingSpot.where}`, riseOnHover: true });
+        m = L.marker([s.lat, s.lng], { icon: iconFor(s, near), title: `${s.shadow.name}: ${tellLabel(s).toLowerCase()} ${s.hidingSpot.where}`, riseOnHover: true });
         (m as L.Marker & { _near?: boolean })._near = near;
         m.on('click', () => onTap(s));
         layer.addLayer(m);
@@ -99,4 +99,8 @@ export function initGameplay(map: L.Map): GameplayHandle {
       refresh();
     },
   };
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }

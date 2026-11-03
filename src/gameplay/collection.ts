@@ -84,7 +84,7 @@ export function getDex(): DexEntry[] {
   );
 }
 
-/** Renders a simple dex grid: caught species in color, uncaught as "???". */
+/** Renders a simple dex grid: caught species in color, uncaught as a named silhouette. */
 export function renderCollection(container: HTMLElement): void {
   const dex = new Map(getDex().map((d) => [d.shadowId, d]));
   const total = getCollection().length;
@@ -106,7 +106,8 @@ export function renderCollection(container: HTMLElement): void {
       ? `<img src="${artUrl(s.art)}" alt="" onerror="this.style.visibility='hidden'"><div class="sz-card-name">${num} ${escapeHtml(s.name)}</div>
          <div class="sz-card-meta">${s.rarity} · ×${entry.count}</div>
          <div class="sz-card-lore">${escapeHtml(s.lore)}</div>`
-      : `<div class="sz-card-silhouette"></div><div class="sz-card-name">${num} ???</div>`;
+      : `<div class="sz-card-silhouette"></div><div class="sz-card-name">${num} ${escapeHtml(s.name)}</div>
+         <div class="sz-card-meta">${s.rarity} · not caught yet</div>`;
     grid.appendChild(card);
   }
   container.appendChild(grid);

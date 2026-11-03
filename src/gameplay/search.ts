@@ -65,7 +65,7 @@ function searchWithCamera(spawn: Spawn, video: HTMLVideoElement): Promise<boolea
       <div class="sz-search-top">
         <button class="sz-enc-run" aria-label="Stop searching">Run</button>
         <div class="sz-search-hint">
-          <div class="sz-search-where">Something is hiding ${escapeHtml(spawn.hidingSpot.where)}</div>
+          <div class="sz-search-where">${escapeHtml(spawn.shadow.name)} is hiding ${escapeHtml(spawn.hidingSpot.where)}</div>
           <div class="sz-search-tip">${escapeHtml(spawn.hidingSpot.tip)}</div>
         </div>
       </div>
